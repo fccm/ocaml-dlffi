@@ -9,7 +9,9 @@ OCAMLOPT = ocamlopt
 OCAMLMKLIB = ocamlmklib
 EDITOR = vim
 
-all: test_opt
+all: lib
+lib: dlffi.cma
+opt: dlffi.cmxa
 
 dlffi_stubs.o: dlffi_stubs.c
 	$(OCAMLC) -g -c -ccopt $(FFI_CFLAGS) $<
@@ -29,23 +31,9 @@ dlffi.cma: dlffi.cmo  dlldlffi_stubs.so
 dlffi.cmxa:  dlffi.cmx  dlldlffi_stubs.so
 	$(OCAMLOPT) -a -o $@ $< -cclib -ldlffi_stubs -cclib -ldl -cclib $(FFI_LIBS)
 
-testlib.so: testlib.c
-	$(CC) -g -shared -nostartfiles $< -o $@
-
 .PHONY: edit
 edit:
-	$(EDITOR) dlffi_stubs.c dlffi.ml Makefile test.ml testlib.c
-
-.PHONY: test
-test: dlffi.cma testlib.so
-	ocaml dlffi.cma test.ml
-
-test.opt: test.ml dlffi.cmxa testlib.so
-	ocamlopt -g -o $@ -I . dlffi.cmxa $<
-
-.PHONY: test_opt
-test_opt: test.opt
-	./$<
+	$(EDITOR) dlffi_stubs.c dlffi.ml Makefile
 
 .PHONY: clean
 clean:
